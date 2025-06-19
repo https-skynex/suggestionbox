@@ -1,0 +1,251 @@
+<div class="local-suggestionbox-student">
+    <h3>{{#str}}student_title, local_suggestionbox{{/str}}</h3>
+
+    <div class="suggestion-form">
+        <textarea id="suggestion-message" placeholder="{{#str}}placeholder, local_suggestionbox{{/str}}" rows="4" cols="50"></textarea>
+        <button id="submit-suggestion" class="btn btn-primary">{{#str}}submit, local_suggestionbox{{/str}}</button>
+    </div>
+
+    <div id="suggestions-container" class="suggestions-grid">
+        {{#suggestions}}
+        <div class="suggestion-box {{#liked}}liked{{/liked}}" data-id="{{id}}">
+            <div class="suggestion-content" data-fullmessage="{{message}}">
+                <div class="message-preview">
+                    <strong>{{author}}:</strong> {{preview}}
+                </div>
+                <div class="suggestion-meta">
+                    <span class="time">{{time}}</span>
+                    {{#liked}}<span class="liked-badge">✓ Considered</span>{{/liked}}
+                </div>
+            </div>
+        </div>
+        {{/suggestions}}
+    </div>
+</div>
+
+<!-- Modal para mensaje completo (copiado del profesor) -->
+<div id="suggestion-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h4>{{#str}}full_message, local_suggestionbox{{/str}}</h4>
+        <div id="modal-message-content" class="modal-body"></div>
+        <div class="modal-footer">
+            <span id="modal-author" class="text-muted"></span>
+            <span id="modal-time" class="text-muted"></span>
+        </div>
+    </div>
+</div>
+
+{{#js}}
+require(['jquery', 'core/str'], function($, str) {
+    $(document).ready(function() {
+        // Envío de sugerencias (existente)
+        $('#submit-suggestion').click(function(e) {
+            e.preventDefault();
+
+            const message = $('#suggestion-message').val().trim();
+            const courseid = {{courseid}};
+
+            if (!message) {
+                str.get_string('error_message', 'local_suggestionbox').then(function(s) {
+                    alert(s);
+                });
+                return;
+            }
+
+            $('<form>', {
+                'method': 'post',
+                'action': M.cfg.wwwroot + '/local/suggestionbox/view.php',
+                'html': `
+                    <input type="hidden" name="sesskey" value="${M.cfg.sesskey}">
+                    <input type="hidden" name="courseid" value="${courseid}">
+                    <input type="hidden" name="action" value="submit">
+                    <input type="hidden" name="message" value="${message.replace(/"/g, '&quot;')}">
+                `
+            }).appendTo('body').submit();
+        });
+
+        // ========== FUNCIONALIDAD DEL MODAL (SIMPLE Y EFECTIVA) ==========
+        const modal = $('#suggestion-modal');
+        const modalContent = $('#modal-message-content');
+        const modalAuthor = $('#modal-author');
+        const modalTime = $('#modal-time');
+
+        // Abrir modal al hacer clic en una sugerencia
+        $('.suggestion-content').click(function() {
+            const fullMessage = $(this).data('fullmessage');
+            const author = $(this).find('strong').text().replace(':', '');
+            const time = $(this).find('.time').text();
+
+            modalContent.text(fullMessage);
+            modalAuthor.text(author);
+            modalTime.text(time);
+            modal.css('display', 'block');
+        });
+
+        // Cerrar modal
+        $('.close-modal').click(function() {
+            modal.css('display', 'none');
+        });
+
+        // Cerrar al hacer clic fuera del contenido
+        $(window).click(function(e) {
+            if ($(e.target).is(modal)) {
+                modal.css('display', 'none');
+            }
+        });
+
+        // Cerrar con ESC
+        $(document).keyup(function(e) {
+            if (e.key === "Escape" && modal.css('display') === 'block') {
+                modal.css('display', 'none');
+            }
+        });
+    });
+});
+{{/js}}
+
+<style>
+.suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.suggestion-box {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.suggestion-box.liked {
+    background-color: #e8f5e9;
+    border-color: #c8e6c9;
+}
+
+.suggestion-box:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+}
+
+.suggestion-content {
+    cursor: pointer;
+}
+
+.message-preview {
+    font-size: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.suggestion-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.liked-badge {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* ESTILOS MODAL CENTRADO VERTICALMENTE */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
+    overflow: auto;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+
+    /* POSICIÓN ABSOLUTAMENTE CENTRADA */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* Animación suave */
+    animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%); /* Comienza un poco más arriba */
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%); /* Termina centrado */
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal:hover {
+    color: #f00;
+}
+
+.modal-body {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    max-height: 50vh;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* Asegurar que el modal sea responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .modal-body {
+        max-height: 60vh;
+    }
+}
+</style>

@@ -1,0 +1,213 @@
+<div class="local-suggestionbox-teacher">
+    <h3>{{#str}}teacher_title, local_suggestionbox{{/str}}</h3>
+
+    <div id="teacher-suggestions" class="suggestions-grid">
+        {{#suggestions}}
+<div class="suggestion-box {{#liked}}liked{{/liked}}" data-id="{{id}}">
+    <div class="suggestion-content" data-fullmessage="{{message}}">
+        <div class="message-preview">
+            <strong>{{author}}:</strong> {{preview}}
+        </div>
+        <div class="suggestion-meta">
+            <span class="time">{{time}}</span>
+            <form method="post" action="{{actionurl}}" class="like-form">
+                    <input type="hidden" name="suggestionid" value="{{id}}">
+                    <input type="hidden" name="courseid" value="{{courseid}}">
+                    <input type="hidden" name="action" value="like">
+                    {{#liked}}
+                        <button type="submit" class="btn btn-success btn-sm">{{#str}}liked, local_suggestionbox{{/str}}</button>
+                    {{/liked}}
+                    {{^liked}}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">{{#str}}like, local_suggestionbox{{/str}}</button>
+                    {{/liked}}
+            </form>
+        </div>
+    </div>
+</div>
+{{/suggestions}}
+    </div>
+</div>
+
+<!-- Modal para mensaje completo -->
+<div id="suggestion-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h4>{{#str}}full_message, local_suggestionbox{{/str}}</h4>
+        <div id="modal-message-content" class="modal-body"></div>
+        <div class="modal-footer">
+            <span id="modal-author" class="text-muted"></span>
+            <span id="modal-time" class="text-muted"></span>
+        </div>
+    </div>
+</div>
+
+{{#js}}
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const btn = this.querySelector('button');
+        btn.disabled = true;
+        btn.innerHTML = '{{#str}}processing, local_suggestionbox{{/str}} <i class="fa fa-spinner fa-spin"></i>';
+    });
+});
+
+require(['core/str', 'core/notification', 'core/templates'], function(Str, Notification, Templates) {
+    // Configuración del modal
+    const modal = document.getElementById('suggestion-modal');
+    const modalContent = document.getElementById('modal-message-content');
+    const modalAuthor = document.getElementById('modal-author');
+    const modalTime = document.getElementById('modal-time');
+    const closeBtn = document.querySelector('.close-modal');
+
+    // Función para abrir el modal
+    function openModal(content, author, time) {
+        modalContent.innerHTML = content;
+        modalAuthor.textContent = author;
+        modalTime.textContent = time;
+        modal.style.display = 'block';
+
+        // Añadir clase al body para deshabilitar scroll
+        document.body.classList.add('modal-open');
+    }
+
+    // Función para cerrar el modal
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+
+    // Event listeners para las sugerencias
+    document.querySelectorAll('.suggestion-content').forEach(box => {
+        box.addEventListener('click', function(e) {
+            // Evitar que se active cuando se hace clic en el botón de like
+            if (!e.target.closest('.like-form')) {
+                const fullMessage = this.getAttribute('data-fullmessage');
+                const author = this.querySelector('strong').textContent.replace(':', '');
+                const time = this.querySelector('.time').textContent;
+                openModal(fullMessage, author, time);
+            }
+        });
+    });
+
+    // Event listeners para cerrar el modal
+    closeBtn.addEventListener('click', closeModal);
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'block') closeModal();
+    });
+});
+
+{{/js}}
+
+
+<style>
+/* Estilos para el modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 5px;
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: black;
+}
+
+.modal-body {
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+/* Estilos existentes mejorados */
+.suggestion-box {
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 15px;
+}
+
+.suggestion-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.suggestion-content {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.suggestion-box.liked .suggestion-content {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-open {
+    overflow: hidden;
+}
+</style>
