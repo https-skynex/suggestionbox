@@ -1,8 +1,37 @@
 # suggestionbox #
 
-TO-DO Describe the plugin shortly here.
+Suggestion Box Moodle Local Plugin
+The Suggestion Box is a local plugin for Moodle developed for 
+educational purposes to demonstrate advanced skills in plugin 
+development. It enables students to submit course-related 
+suggestions and allows teachers to manage them through a 
+"considered" (liked) system.
 
-TO-DO Provide more detailed description here.
+⚙️ Technical Specifications
+Plugin version: 0.1.0
+
+Status: Alpha (MATURITY_ALPHA)
+
+Minimum Moodle requirement: 4.0 (2022112800)
+
+Component: local_suggestionbox
+
+Last update: June 17, 2025 (2025061702)
+
+📦 Plugin Structure
+
+local/suggestionbox/
+├── lang/                 # Translations
+│   ├── local_suggestionbox.php
+├── templates/            # Mustache templates
+│   ├── teacher_view.mustache
+│   └── student_view.mustache
+├── db/                   # Database schema
+│   ├── access.php
+│   └── install.xml
+├── lib.php               # Core logic
+├── view.php              # Controller
+└── version.php           # Version information
 
 ## Installing via uploaded ZIP file ##
 
