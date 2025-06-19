@@ -21,17 +21,29 @@ Last update: June 17, 2025 (2025061702)
 📦 Plugin Structure
 
 local/suggestionbox/
+
 ├── lang/                 # Translations
-│   ├── local_suggestionbox.php
+
+│               ├── local_suggestionbox.php
+
 ├── templates/            # Mustache templates
+
 │   ├── teacher_view.mustache
+
 │   └── student_view.mustache
+
 ├── db/                   # Database schema
+
 │   ├── access.php
+
 │   └── install.xml
+
 ├── lib.php               # Core logic
+
 ├── view.php              # Controller
+
 └── version.php           # Version information
+
 
 ## Installing via uploaded ZIP file ##
 
